@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@theme {
+  --color-plum: #3A0F34;
+  --color-plum-dark: #270723;
+  --color-plum-light: #4E1847;
+  --color-plum-subtle: #F6EFF5;
+  --color-light-grey: #DDE3E8;
+  --color-soft-bg: #F4F6F8;
+  --color-surface-white: #FFFFFF;
+  --color-gold: #EAAA00;
+  --color-gold-hover: #D69800;
+  --color-gold-light: #FFF8E6;
+  --color-text-primary: #3A0F34;
+  --color-text-body: #4A4550;
+  --color-text-muted: #7A7280;
+}
+
+:root {
+  --color-plum: #3A0F34;
+  --color-plum-dark: #270723;
+  --color-plum-light: #4E1847;
+  --color-plum-subtle: #F6EFF5;
+  --color-light-grey: #DDE3E8;
+  --color-soft-bg: #F4F6F8;
+  --color-surface-white: #FFFFFF;
+  --color-gold: #EAAA00;
+  --color-gold-hover: #D69800;
+  --color-gold-light: #FFF8E6;
+  --color-text-primary: #3A0F34;
+  --color-text-body: #4A4550;
+  --color-text-muted: #7A7280;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    background-color: #FFFFFF;
+    color: #3A0F34;
+    overflow-x: hidden;
+  }
+
+  /* Custom subtle light scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #F4F6F8;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #DDE3E8;
+    border-radius: 4px;
+    border: 1px solid #F4F6F8;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #EAAA00;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes spinClockwise {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinCounterClockwise {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes scanlineBeam {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(1000%);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinClockwise 14s linear infinite;
+}
+
+.animate-spin-reverse-slow {
+  animation: spinCounterClockwise 9s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
