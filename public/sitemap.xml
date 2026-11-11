@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://YOUR-DOMAIN-HERE/</loc>
+    <loc>https://edenexa.work.gd/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://YOUR-DOMAIN-HERE/pricing</loc>
+    <loc>https://edenexa.work.gd/pricing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://YOUR-DOMAIN-HERE/privacy</loc>
+    <loc>https://edenexa.work.gd/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://YOUR-DOMAIN-HERE/terms</loc>
+    <loc>https://edenexa.work.gd/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
