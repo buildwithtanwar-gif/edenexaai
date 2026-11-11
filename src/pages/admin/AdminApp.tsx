@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '../../context/AuthContext';
+import { AdminThemeProvider } from './AdminThemeContext';
 import { Loader2 } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { AdminLogin } from './AdminLogin';
@@ -113,7 +114,9 @@ function AdminContent({ currentPath, navigateTo, loadPublicData }: AdminAppProps
 export default function AdminApp(props: AdminAppProps) {
   return (
     <AuthProvider>
-      <AdminContent {...props} />
+      <AdminThemeProvider>
+        <AdminContent {...props} />
+      </AdminThemeProvider>
     </AuthProvider>
   );
 }

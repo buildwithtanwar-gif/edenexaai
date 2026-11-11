@@ -11,18 +11,21 @@ import {
   ShieldCheck,
   Lock,
   Key,
-  RefreshCw,
   EyeOff,
   CheckSquare,
   Square,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Sun,
+  Moon,
+  Palette
 } from 'lucide-react';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { INITIAL_SETTINGS } from '../../lib/initialData';
 import { sanitizePhoneNumber } from '../../lib/whatsapp';
 import { SetupGuideModal } from '../../components/common/SetupGuideModal';
 import { fetchLiveSettings, saveLiveSettings } from '../../lib/adminStore';
+import { useAdminTheme } from './AdminThemeContext';
 
 interface SettingsManagerProps {
   onDataUpdated?: () => void;
@@ -120,6 +123,9 @@ const SECURITY_CHECKLIST: SecurityChecklistItem[] = [
 ];
 
 export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated }) => {
+  const { theme, setTheme } = useAdminTheme();
+  const isDark = theme === 'dark';
+
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -248,38 +254,44 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
   const completionPercentage = Math.round((completedCount / totalCount) * 100);
 
   return (
-    <div className="p-6 sm:p-8 space-y-6 max-w-4xl text-[#3A0F34]">
+    <div className={`p-6 sm:p-8 space-y-6 max-w-4xl transition-colors duration-200 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>
       {/* Top Header & Tab Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#DDE3E8]">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b ${isDark ? 'border-[#2D1F31]' : 'border-[#DDE3E8]'}`}>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#3A0F34] tracking-tight">
+          <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-[#3A0F34]'}`}>
             Agency Settings & Security
           </h1>
-          <p className="text-xs sm:text-sm text-[#5C5260] mt-1 font-medium">
-            Manage public communication channels, branding targets, and verify deployment security best practices.
+          <p className={`text-xs sm:text-sm mt-1 font-medium ${isDark ? 'text-[#A89CA8]' : 'text-[#5C5260]'}`}>
+            Manage public communication channels, admin appearance, and verify deployment security.
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center p-1 rounded-xl bg-[#F0F4F8] border border-[#DDE3E8] w-fit shrink-0">
+        <div className={`flex items-center p-1 rounded-xl border w-fit shrink-0 ${isDark ? 'bg-[#18111D] border-[#2D1F31]' : 'bg-[#F0F4F8] border-[#DDE3E8]'}`}>
           <button
             type="button"
             onClick={() => setActiveTab('general')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
               activeTab === 'general'
-                ? 'bg-white text-[#3A0F34] shadow-xs'
+                ? isDark
+                  ? 'bg-[#251A2C] text-white shadow-xs'
+                  : 'bg-white text-[#3A0F34] shadow-xs'
+                : isDark
+                ? 'text-[#A89CA8] hover:text-white'
                 : 'text-[#5C5260] hover:text-[#3A0F34]'
             }`}
           >
             <Phone className="w-3.5 h-3.5 text-emerald-600" />
-            <span>General & Contact</span>
+            <span>General & Appearance</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('security')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
               activeTab === 'security'
-                ? 'bg-[#3A0F34] text-white shadow-xs'
+                ? 'bg-[#3A0F34] text-white shadow-xs border border-[#EAAA00]/40'
+                : isDark
+                ? 'text-[#A89CA8] hover:text-white'
                 : 'text-[#5C5260] hover:text-[#3A0F34]'
             }`}
           >
@@ -296,27 +308,33 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
         <div
           className={`p-4 rounded-xl text-xs flex items-center justify-between border ${
             toast.type === 'success'
-              ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+              ? isDark
+                ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+              : isDark
+              ? 'bg-rose-950/60 border-rose-800 text-rose-300'
               : 'bg-rose-50 border-rose-300 text-rose-800'
           }`}
         >
           <div className="flex items-center gap-2">
             {toast.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
             )}
             <span>{toast.message}</span>
           </div>
-          <button onClick={() => setToast(null)} className="text-xs opacity-60 hover:opacity-100 font-bold ml-4">
+          <button onClick={() => setToast(null)} className="text-xs opacity-60 hover:opacity-100 font-bold ml-4 cursor-pointer">
             Dismiss
           </button>
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+        <div className={`p-4 rounded-xl border text-xs flex items-center gap-2 ${
+          isDark ? 'bg-rose-950/60 border-rose-800 text-rose-300' : 'bg-rose-50 border-rose-300 text-rose-700'
+        }`}>
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -324,13 +342,98 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
       {/* TAB 1: GENERAL & CONTACT SETTINGS */}
       {activeTab === 'general' && (
         <div className="space-y-6">
+          {/* Theme & Visual Appearance Preference Card (Requested Feature) */}
+          <div className={`p-6 rounded-2xl border space-y-4 text-xs shadow-xs transition-colors duration-200 ${
+            isDark ? 'bg-[#18111D] border-[#2D1F31]' : 'bg-white border-[#DDE3E8]'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h2 className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#3A0F34]'}`}>
+                  <Palette className="w-4 h-4 text-[#EAAA00]" />
+                  <span>Admin Console Theme</span>
+                </h2>
+                <p className={`text-xs mt-0.5 ${isDark ? 'text-[#A89CA8]' : 'text-[#5C5260]'}`}>
+                  Switch the administrative console between Light and Dark modes.
+                </p>
+              </div>
+
+              <span className={`text-[10px] px-2.5 py-1 rounded-full font-mono font-bold uppercase tracking-wider ${
+                isDark
+                  ? 'bg-[#2E1E34] text-[#EAAA00] border border-[#EAAA00]/40'
+                  : 'bg-[#FFF8E6] text-[#3A0F34] border border-[#EAAA00]/40'
+              }`}>
+                Active: {isDark ? 'Dark Mode' : 'Light Mode'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {/* Light Mode Option */}
+              <button
+                type="button"
+                onClick={() => {
+                  setTheme('light');
+                  showToast('Admin Console switched to Light Mode.', 'success');
+                }}
+                className={`p-4 rounded-xl border flex items-center gap-3.5 transition-all text-left cursor-pointer ${
+                  !isDark
+                    ? 'bg-[#FFF8E6] border-[#EAAA00] ring-2 ring-[#EAAA00]/25'
+                    : 'bg-[#201625] border-[#38263E] hover:border-[#EAAA00]/40'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  !isDark ? 'bg-[#EAAA00] text-[#3A0F34]' : 'bg-white/10 text-[#A89CA8]'
+                }`}>
+                  <Sun className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className={`text-xs font-bold ${!isDark ? 'text-[#3A0F34]' : 'text-white'}`}>
+                    Light Mode
+                  </div>
+                  <div className={`text-[11px] ${!isDark ? 'text-[#5C5260]' : 'text-[#A89CA8]'}`}>
+                    Crisp white and clean neutral surfaces.
+                  </div>
+                </div>
+              </button>
+
+              {/* Dark Mode Option */}
+              <button
+                type="button"
+                onClick={() => {
+                  setTheme('dark');
+                  showToast('Admin Console switched to Dark Mode.', 'success');
+                }}
+                className={`p-4 rounded-xl border flex items-center gap-3.5 transition-all text-left cursor-pointer ${
+                  isDark
+                    ? 'bg-[#2B1930] border-[#EAAA00] ring-2 ring-[#EAAA00]/30'
+                    : 'bg-[#F8FAFC] border-[#DDE3E8] hover:border-[#EAAA00]/60'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  isDark ? 'bg-[#EAAA00] text-[#3A0F34]' : 'bg-[#3A0F34] text-white'
+                }`}>
+                  <Moon className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className={`text-xs font-bold ${isDark ? 'text-[#EAAA00]' : 'text-[#3A0F34]'}`}>
+                    Dark Mode
+                  </div>
+                  <div className={`text-[11px] ${isDark ? 'text-[#EDE8EE]' : 'text-[#5C5260]'}`}>
+                    Deep obsidian and plum surfaces for low-light work.
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Quick Database Status Summary */}
-          <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#DDE3E8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs transition-colors duration-200 ${
+            isDark ? 'bg-[#18111D] border-[#2D1F31]' : 'bg-[#F8FAFC] border-[#DDE3E8]'
+          }`}>
             <div className="flex items-center gap-2.5">
               <Database className="w-4 h-4 text-[#EAAA00]" />
               <div>
-                <span className="font-bold text-[#3A0F34]">Supabase Live Connection: </span>
-                <span className={isSupabaseConfigured ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'}>
+                <span className={`font-bold ${isDark ? 'text-white' : 'text-[#3A0F34]'}`}>Supabase Live Connection: </span>
+                <span className={isSupabaseConfigured ? 'text-emerald-500 font-bold' : 'text-amber-500 font-bold'}>
                   {isSupabaseConfigured ? 'Operational (RLS Active)' : 'Configuration Needed'}
                 </span>
               </div>
@@ -338,7 +441,9 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
             <button
               type="button"
               onClick={() => setActiveTab('security')}
-              className="text-xs font-bold text-[#3A0F34] hover:text-[#EAAA00] flex items-center gap-1 transition"
+              className={`text-xs font-bold flex items-center gap-1 transition cursor-pointer ${
+                isDark ? 'text-[#EDE8EE] hover:text-[#EAAA00]' : 'text-[#3A0F34] hover:text-[#EAAA00]'
+              }`}
             >
               <span>View Security Checklist</span>
               <ShieldCheck className="w-3.5 h-3.5 text-[#EAAA00]" />
@@ -346,22 +451,24 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-12 text-[#5C5260] text-xs">
+            <div className={`flex items-center justify-center py-12 text-xs ${isDark ? 'text-[#A89CA8]' : 'text-[#5C5260]'}`}>
               <Loader2 className="w-5 h-5 animate-spin mr-2 text-[#EAAA00]" />
               Loading settings...
             </div>
           ) : (
             <form onSubmit={handleSave} className="space-y-6">
               {/* Contact Information */}
-              <div className="p-6 rounded-2xl bg-white border border-[#DDE3E8] space-y-4 text-xs shadow-xs">
-                <h2 className="text-base font-bold text-[#3A0F34] flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-emerald-600" />
+              <div className={`p-6 rounded-2xl border space-y-4 text-xs shadow-xs transition-colors duration-200 ${
+                isDark ? 'bg-[#18111D] border-[#2D1F31]' : 'bg-white border-[#DDE3E8]'
+              }`}>
+                <h2 className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#3A0F34]'}`}>
+                  <Phone className="w-4 h-4 text-emerald-500" />
                   <span>Public Contact & WhatsApp Configuration</span>
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>
                       WhatsApp Phone Number (Clean Digits)
                     </label>
                     <input
@@ -369,15 +476,19 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
                       placeholder="e.g. 919876543210"
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
-                    <span className="text-[10px] text-[#7A7280]">
+                    <span className={`text-[10px] ${isDark ? 'text-[#A89CA8]' : 'text-[#7A7280]'}`}>
                       Country code + digits without spaces or '+' (used in wa.me/number). Leave empty if not using WhatsApp.
                     </span>
                   </div>
 
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>
                       WhatsApp Display Format
                     </label>
                     <input
@@ -385,9 +496,13 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                       value={whatsappDisplay}
                       onChange={(e) => setWhatsappDisplay(e.target.value)}
                       placeholder="e.g. +91 98765 43210"
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
-                    <span className="text-[10px] text-[#7A7280]">
+                    <span className={`text-[10px] ${isDark ? 'text-[#A89CA8]' : 'text-[#7A7280]'}`}>
                       Formatted string shown on the website contact cards
                     </span>
                   </div>
@@ -395,7 +510,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>
                       Public Inquiries Email
                     </label>
                     <input
@@ -403,12 +518,16 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="contact@edenexa.work.gd"
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>
                       Agency Location / Base
                     </label>
                     <input
@@ -416,13 +535,17 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="e.g. India (Remote)"
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[#3A0F34] font-bold mb-1">
+                  <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>
                     Working Hours Display
                   </label>
                   <input
@@ -430,62 +553,84 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                     value={hours}
                     onChange={(e) => setHours(e.target.value)}
                     placeholder="e.g. Mon – Sat, 10:00 AM – 7:00 PM IST"
-                    className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                    className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                      isDark
+                        ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                        : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                    }`}
                   />
                 </div>
               </div>
 
               {/* Social Profile Links */}
-              <div className="p-6 rounded-2xl bg-white border border-[#DDE3E8] space-y-4 text-xs shadow-xs">
-                <h2 className="text-base font-bold text-[#3A0F34] flex items-center gap-2">
+              <div className={`p-6 rounded-2xl border space-y-4 text-xs shadow-xs transition-colors duration-200 ${
+                isDark ? 'bg-[#18111D] border-[#2D1F31]' : 'bg-white border-[#DDE3E8]'
+              }`}>
+                <h2 className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#3A0F34]'}`}>
                   <Globe className="w-4 h-4 text-[#EAAA00]" />
                   <span>Social Profile URLs (Optional)</span>
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">GitHub Profile / Repo</label>
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>GitHub Profile / Repo</label>
                     <input
                       type="url"
                       value={github}
                       onChange={(e) => setGithub(e.target.value)}
                       placeholder="https://github.com/..."
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">LinkedIn Profile</label>
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>LinkedIn Profile</label>
                     <input
                       type="url"
                       value={linkedin}
                       onChange={(e) => setLinkedin(e.target.value)}
                       placeholder="https://linkedin.com/..."
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">Instagram URL</label>
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>Instagram URL</label>
                     <input
                       type="url"
                       value={instagram}
                       onChange={(e) => setInstagram(e.target.value)}
                       placeholder="https://instagram.com/..."
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[#3A0F34] font-bold mb-1">Twitter / X URL</label>
+                    <label className={`block font-bold mb-1 ${isDark ? 'text-[#EDE8EE]' : 'text-[#3A0F34]'}`}>Twitter / X URL</label>
                     <input
                       type="url"
                       value={twitter}
                       onChange={(e) => setTwitter(e.target.value)}
                       placeholder="https://x.com/..."
-                      className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+                      className={`w-full px-3 py-2 rounded-xl border font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40 ${
+                        isDark
+                          ? 'bg-[#241A2C] border-[#3D2C44] text-white placeholder-[#7A7280]'
+                          : 'bg-[#F8FAFC] border-[#DDE3E8] text-[#3A0F34]'
+                      }`}
                     />
                   </div>
                 </div>
@@ -570,16 +715,20 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
               return (
                 <div
                   key={category}
-                  className="p-6 rounded-2xl bg-white border border-[#DDE3E8] space-y-4 shadow-xs"
+                  className={`p-6 rounded-2xl border space-y-4 shadow-xs transition-colors duration-200 ${
+                    isDark ? 'bg-[#18111D] border-[#2D1F31]' : 'bg-white border-[#DDE3E8]'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-extrabold text-[#3A0F34] uppercase tracking-wider flex items-center gap-2">
+                    <h3 className={`text-sm font-extrabold uppercase tracking-wider flex items-center gap-2 ${
+                      isDark ? 'text-white' : 'text-[#3A0F34]'
+                    }`}>
                       {category === 'Authentication & Access' && <Key className="w-4 h-4 text-[#EAAA00]" />}
-                      {category === 'Database & Secrets' && <Database className="w-4 h-4 text-emerald-600" />}
-                      {category === 'Anti-Abuse & Privacy' && <Shield className="w-4 h-4 text-[#3A0F34]" />}
+                      {category === 'Database & Secrets' && <Database className="w-4 h-4 text-emerald-500" />}
+                      {category === 'Anti-Abuse & Privacy' && <Shield className="w-4 h-4 text-[#EAAA00]" />}
                       <span>{category}</span>
                     </h3>
-                    <span className="text-[11px] text-[#5C5260] font-medium">
+                    <span className={`text-[11px] font-medium ${isDark ? 'text-[#A89CA8]' : 'text-[#5C5260]'}`}>
                       {categoryItems.filter((i) => checkedItems[i.id]).length}/{categoryItems.length} checked
                     </span>
                   </div>
@@ -593,16 +742,20 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                           onClick={() => toggleChecklistItem(item.id)}
                           className={`p-4 rounded-xl border transition cursor-pointer select-none ${
                             isChecked
-                              ? 'bg-emerald-50/40 border-emerald-200'
+                              ? isDark
+                                ? 'bg-emerald-950/25 border-emerald-800/60'
+                                : 'bg-emerald-50/40 border-emerald-200'
+                              : isDark
+                              ? 'bg-[#221627] border-[#38263E] hover:border-[#EAAA00]/40'
                               : 'bg-[#F8FAFC] border-[#DDE3E8] hover:border-[#EAAA00]/60'
                           }`}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="mt-0.5 shrink-0 text-[#3A0F34]">
+                            <div className="mt-0.5 shrink-0">
                               {isChecked ? (
-                                <CheckSquare className="w-5 h-5 text-emerald-600" />
+                                <CheckSquare className="w-5 h-5 text-emerald-500" />
                               ) : (
-                                <Square className="w-5 h-5 text-[#7A7280]" />
+                                <Square className={`w-5 h-5 ${isDark ? 'text-[#7A7280]' : 'text-[#7A7280]'}`} />
                               )}
                             </div>
 
@@ -610,7 +763,13 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <span
                                   className={`text-xs font-bold ${
-                                    isChecked ? 'text-emerald-900' : 'text-[#3A0F34]'
+                                    isChecked
+                                      ? isDark
+                                        ? 'text-emerald-300'
+                                        : 'text-emerald-900'
+                                      : isDark
+                                      ? 'text-white'
+                                      : 'text-[#3A0F34]'
                                   }`}
                                 >
                                   {item.title}
@@ -618,11 +777,19 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
 
                                 <div className="flex items-center gap-1.5">
                                   {item.isBuiltIn ? (
-                                    <span className="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase bg-[#FFF8E6] text-[#3A0F34] border border-[#EAAA00]/40">
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${
+                                      isDark
+                                        ? 'bg-[#3A0F34] text-[#EAAA00] border border-[#EAAA00]/40'
+                                        : 'bg-[#FFF8E6] text-[#3A0F34] border border-[#EAAA00]/40'
+                                    }`}>
                                       Built-in Code
                                     </span>
                                   ) : (
-                                    <span className="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${
+                                      isDark
+                                        ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                                        : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                    }`}>
                                       Supabase Console
                                     </span>
                                   )}
@@ -632,7 +799,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={(e) => e.stopPropagation()}
-                                      className="text-[#7A7280] hover:text-[#3A0F34] p-0.5"
+                                      className={`p-0.5 ${isDark ? 'text-[#A89CA8] hover:text-white' : 'text-[#7A7280] hover:text-[#3A0F34]'}`}
                                       title="Open official documentation"
                                     >
                                       <ExternalLink className="w-3 h-3" />
@@ -641,12 +808,12 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                                 </div>
                               </div>
 
-                              <p className="text-xs text-[#5C5260] leading-relaxed">
+                              <p className={`text-xs leading-relaxed ${isDark ? 'text-[#C5B9C5]' : 'text-[#5C5260]'}`}>
                                 {item.description}
                               </p>
 
-                              <div className="pt-1 text-[11px] font-mono font-medium text-[#7A7280]">
-                                💡 <span className="font-bold text-[#3A0F34]">Action:</span> {item.recommendation}
+                              <div className={`pt-1 text-[11px] font-mono font-medium ${isDark ? 'text-[#A89CA8]' : 'text-[#7A7280]'}`}>
+                                💡 <span className={`font-bold ${isDark ? 'text-white' : 'text-[#3A0F34]'}`}>Action:</span> {item.recommendation}
                               </div>
                             </div>
                           </div>
@@ -660,18 +827,22 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
           )}
 
           {/* Database Architecture & Setup Modal Trigger */}
-          <div className="p-6 rounded-2xl bg-white border border-[#DDE3E8] space-y-3 shadow-xs">
+          <div className={`p-6 rounded-2xl border space-y-3 shadow-xs transition-colors duration-200 ${
+            isDark ? 'bg-[#18111D] border-[#2D1F31]' : 'bg-white border-[#DDE3E8]'
+          }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Database className="w-4 h-4 text-[#EAAA00]" />
-                <h3 className="text-sm font-bold text-[#3A0F34]">
+                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-[#3A0F34]'}`}>
                   Database Schema & Migration Reference
                 </h3>
               </div>
               <span
                 className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase ${
                   isSupabaseConfigured
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                    ? isDark
+                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                      : 'bg-emerald-50 text-emerald-700 border border-emerald-300'
                     : 'bg-amber-50 text-amber-800 border border-amber-300'
                 }`}
               >
@@ -679,7 +850,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
               </span>
             </div>
 
-            <p className="text-xs text-[#5C5260] leading-relaxed">
+            <p className={`text-xs leading-relaxed ${isDark ? 'text-[#C5B9C5]' : 'text-[#5C5260]'}`}>
               Need to inspect live table definitions, verify foreign keys, or review security policies for inquiries and settings?
             </p>
 
@@ -687,7 +858,11 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
               <button
                 type="button"
                 onClick={() => setSetupModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-[#F4F6F8] hover:bg-[#FFF8E6] text-xs text-[#3A0F34] font-bold border border-[#DDE3E8] hover:border-[#EAAA00] transition cursor-pointer flex items-center gap-2"
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-2 ${
+                  isDark
+                    ? 'bg-[#251A2C] border-[#3D2C44] text-[#EAAA00] hover:bg-[#32233B]'
+                    : 'bg-[#F4F6F8] border-[#DDE3E8] text-[#3A0F34] hover:bg-[#FFF8E6] hover:border-[#EAAA00]'
+                }`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#EAAA00]" />
                 <span>View Schema Documentation & Setup Guide</span>
@@ -709,9 +884,13 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onDataUpdated 
                   });
                   showToast('All security best practices marked as verified.', 'success');
                 }}
-                className="px-4 py-2 rounded-xl bg-white hover:bg-[#F8FAFC] text-xs text-[#5C5260] hover:text-[#3A0F34] font-bold border border-[#DDE3E8] transition cursor-pointer flex items-center gap-1.5"
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 ${
+                  isDark
+                    ? 'bg-[#221627] border-[#38263E] text-[#EDE8EE] hover:text-white'
+                    : 'bg-white border-[#DDE3E8] text-[#5C5260] hover:text-[#3A0F34] hover:bg-[#F8FAFC]'
+                }`}
               >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Mark All as Verified</span>
               </button>
             </div>

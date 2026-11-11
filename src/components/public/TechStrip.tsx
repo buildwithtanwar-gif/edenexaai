@@ -3,7 +3,7 @@ import { Database, Zap, Code, Layout, Globe } from 'lucide-react';
 
 export const TechStrip: React.FC = () => {
   const technologies = [
-    { name: 'React', category: 'Frontend Architecture', icon: <Globe className="w-4 h-4 text-[#3A0F34]" /> },
+    { name: 'React', category: 'Frontend UI Framework', icon: <Globe className="w-4 h-4 text-[#3A0F34]" /> },
     { name: 'TypeScript', category: 'Strict Type Safety', icon: <Code className="w-4 h-4 text-[#EAAA00]" /> },
     { name: 'Supabase', category: 'Database & Auth', icon: <Database className="w-4 h-4 text-[#3A0F34]" /> },
     { name: 'Tailwind CSS', category: 'Modern Styling', icon: <Layout className="w-4 h-4 text-[#EAAA00]" /> },

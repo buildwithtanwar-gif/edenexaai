@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Navbar } from './components/public/Navbar';
 import { Hero } from './components/public/Hero';
 import { TechStrip } from './components/public/TechStrip';
@@ -65,6 +65,41 @@ function AppContent() {
 
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(INITIAL_SETTINGS);
 
+  // Top Loading Progress Bar State (tracking route transitions & data fetching)
+  const [navProgress, setNavProgress] = useState(0);
+  const [isNavLoading, setIsNavLoading] = useState(false);
+  const progressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const startProgress = () => {
+    if (progressTimerRef.current) clearTimeout(progressTimerRef.current);
+    setIsNavLoading(true);
+    setNavProgress(25);
+    progressTimerRef.current = setTimeout(() => {
+      setNavProgress(65);
+      progressTimerRef.current = setTimeout(() => {
+        setNavProgress(85);
+      }, 200);
+    }, 150);
+  };
+
+  const completeProgress = () => {
+    if (progressTimerRef.current) clearTimeout(progressTimerRef.current);
+    setNavProgress(100);
+    progressTimerRef.current = setTimeout(() => {
+      setIsNavLoading(false);
+      setNavProgress(0);
+    }, 350);
+  };
+
+  // Route transition tracking
+  useEffect(() => {
+    startProgress();
+    const timer = setTimeout(() => {
+      completeProgress();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [currentPath]);
+
   // Sync route on popstate (browser back/forward)
   useEffect(() => {
     const handlePopState = () => {
@@ -99,6 +134,7 @@ function AppContent() {
 
   // Fetch Public Data on Mount & when updated
   const loadPublicData = async () => {
+    startProgress();
     try {
       const [srvRes, pkgRes, projRes, faqRes, settingsRes] = await Promise.all([
         getServices(false),
@@ -129,6 +165,8 @@ function AppContent() {
       }
     } catch (err) {
       console.warn('Notice loading public datasets:', err);
+    } finally {
+      completeProgress();
     }
   };
 
@@ -201,44 +239,68 @@ function AppContent() {
     }
   }, []);
 
+  // Top Loading Progress Bar Element (Slim, Elegant Gold Gradient)
+  const progressBarElement = (
+    <div
+      className={`fixed top-0 left-0 right-0 z-[100] h-[2.5px] pointer-events-none transition-opacity duration-300 ${
+        isNavLoading || navProgress > 0 ? 'opacity-100' : 'opacity-0'
+      }`}
+      aria-hidden="true"
+    >
+      <div
+        className="h-full bg-gradient-to-r from-[#EAAA00]/40 via-[#EAAA00] to-[#FFE082] shadow-[0_0_8px_rgba(234,170,0,0.8)] transition-all duration-300 ease-out"
+        style={{ width: `${navProgress}%` }}
+      />
+    </div>
+  );
+
   // 1. LEGAL / POLICY PAGES (Public)
   if (currentPath === '/privacy') {
     return (
-      <PrivacyPolicy
-        onBack={() => navigateTo('/')}
-        contactEmail={siteSettings.contact?.email}
-      />
+      <>
+        {progressBarElement}
+        <PrivacyPolicy
+          onBack={() => navigateTo('/')}
+          contactEmail={siteSettings.contact?.email}
+        />
+      </>
     );
   }
 
   if (currentPath === '/terms') {
     return (
-      <TermsOfService
-        onBack={() => navigateTo('/')}
-        contactEmail={siteSettings.contact?.email}
-      />
+      <>
+        {progressBarElement}
+        <TermsOfService
+          onBack={() => navigateTo('/')}
+          contactEmail={siteSettings.contact?.email}
+        />
+      </>
     );
   }
 
   // 2. ADMIN APPLICATION ROUTES (Completely encapsulated in lazy AdminApp with Suspense)
   if (currentPath.startsWith('/admin')) {
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen bg-[#F4F6F8] flex flex-col items-center justify-center text-[#5C5260] gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-[#EAAA00]" />
-            <span className="text-xs uppercase tracking-wider font-mono font-bold text-[#3A0F34]">
-              Loading Admin Console...
-            </span>
-          </div>
-        }
-      >
-        <AdminApp
-          currentPath={currentPath}
-          navigateTo={navigateTo}
-          loadPublicData={loadPublicData}
-        />
-      </Suspense>
+      <>
+        {progressBarElement}
+        <Suspense
+          fallback={
+            <div className="min-h-screen bg-[#F4F6F8] flex flex-col items-center justify-center text-[#5C5260] gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-[#EAAA00]" />
+              <span className="text-xs uppercase tracking-wider font-mono font-bold text-[#3A0F34]">
+                Loading Admin Console...
+              </span>
+            </div>
+          }
+        >
+          <AdminApp
+            currentPath={currentPath}
+            navigateTo={navigateTo}
+            loadPublicData={loadPublicData}
+          />
+        </Suspense>
+      </>
     );
   }
 
@@ -246,7 +308,9 @@ function AppContent() {
 
   // 3. PUBLIC MAIN SITE VIEW (Zero admin code or auth context mounted)
   return (
-    <div className="min-h-screen bg-white text-[#3A0F34] flex flex-col selection:bg-[#EAAA00]/30 selection:text-[#3A0F34]">
+    <>
+      {progressBarElement}
+      <div className="min-h-screen bg-white text-[#3A0F34] flex flex-col selection:bg-[#EAAA00]/30 selection:text-[#3A0F34]">
       {/* Desktop Custom Precision Cursor */}
       <CustomCursor />
 
@@ -368,6 +432,7 @@ function AppContent() {
         displayNumber={siteSettings.contact?.whatsappDisplay}
       />
     </div>
+    </>
   );
 }
 
