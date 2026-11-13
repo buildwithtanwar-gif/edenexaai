@@ -150,7 +150,7 @@ export const Hero: React.FC<HeroProps> = ({
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
                   <span className="ml-2 text-[10px] font-mono text-[#7A7280] font-medium hidden sm:inline">
-                    edenexa.work.gd
+                    edenexaai.vercel.app
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#3A0F34] font-bold uppercase tracking-wider">

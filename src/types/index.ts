@@ -134,6 +134,11 @@ export interface SiteSettings {
     linkedin?: string;
     twitter?: string;
   };
+  seo?: {
+    title?: string;
+    description?: string;
+    canonicalUrl?: string;
+  };
 }
 
 export type AdminView =

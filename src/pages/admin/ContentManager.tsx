@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Loader2, CheckCircle2, AlertCircle, FileText, Sparkles } from 'lucide-react';
+import { Save, Loader2, CheckCircle2, AlertCircle, FileText, Sparkles, Globe, Search } from 'lucide-react';
 import { SiteSettings } from '../../types';
 import { INITIAL_SETTINGS } from '../../lib/initialData';
 import { fetchLiveSettings, saveLiveSettings } from '../../lib/adminStore';
@@ -40,6 +40,18 @@ export const ContentManager: React.FC<ContentManagerProps> = ({ onDataUpdated })
       "Our approach is simple: understand the business, agree on the scope, design thoughtfully, and build a website that makes it easier for customers to discover and contact you."
   );
 
+  // Form Fields: Global SEO Metadata
+  const [seoTitle, setSeoTitle] = useState(
+    INITIAL_SETTINGS.seo?.title || 'Edenexa | High-Performance Web Development Studio'
+  );
+  const [seoDescription, setSeoDescription] = useState(
+    INITIAL_SETTINGS.seo?.description ||
+      'Edenexa designs and builds bespoke, responsive websites that help businesses showcase their brand, build trust, and turn visitors into clients.'
+  );
+  const [seoCanonicalUrl, setSeoCanonicalUrl] = useState(
+    INITIAL_SETTINGS.seo?.canonicalUrl || 'https://edenexaai.vercel.app/'
+  );
+
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => {
@@ -67,6 +79,11 @@ export const ContentManager: React.FC<ContentManagerProps> = ({ onDataUpdated })
             setAboutParagraph1(res.data.about.paragraph1 || '');
             setAboutParagraph2(res.data.about.paragraph2 || '');
           }
+          if (res.data.seo) {
+            setSeoTitle(res.data.seo.title || INITIAL_SETTINGS.seo?.title || '');
+            setSeoDescription(res.data.seo.description || INITIAL_SETTINGS.seo?.description || '');
+            setSeoCanonicalUrl(res.data.seo.canonicalUrl || INITIAL_SETTINGS.seo?.canonicalUrl || '');
+          }
         }
       } catch (err: any) {
         console.error('Error loading site content:', err);
@@ -81,6 +98,20 @@ export const ContentManager: React.FC<ContentManagerProps> = ({ onDataUpdated })
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    const trimmedCanonical = seoCanonicalUrl.trim();
+    if (trimmedCanonical) {
+      try {
+        const parsed = new URL(trimmedCanonical);
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          setErrorMessage('Canonical URL must start with https:// or http://');
+          return;
+        }
+      } catch {
+        setErrorMessage('Please enter a valid Canonical URL (e.g. https://edenexaai.vercel.app/).');
+        return;
+      }
+    }
 
     setIsSaving(true);
     try {
@@ -99,12 +130,19 @@ export const ContentManager: React.FC<ContentManagerProps> = ({ onDataUpdated })
         paragraph2: aboutParagraph2.trim(),
       };
 
+      const seoPayload = {
+        title: seoTitle.trim(),
+        description: seoDescription.trim(),
+        canonicalUrl: trimmedCanonical,
+      };
+
       await saveLiveSettings({
         brand: brandPayload,
         about: aboutPayload,
+        seo: seoPayload,
       });
 
-      showToast('Website content updated successfully.', 'success');
+      showToast('Website content and SEO metadata updated successfully.', 'success');
       if (onDataUpdated) onDataUpdated();
     } catch (err: any) {
       console.error('Error saving site content:', err);
@@ -276,6 +314,102 @@ export const ContentManager: React.FC<ContentManagerProps> = ({ onDataUpdated })
                 rows={3}
                 className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
               />
+            </div>
+          </div>
+
+          {/* Global SEO & Search Metadata Card */}
+          <div className="p-6 rounded-2xl bg-white border border-[#DDE3E8] space-y-4 text-xs shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h2 className="text-base font-bold text-[#3A0F34] flex items-center gap-2">
+                <Globe className="w-4 h-4 text-[#EAAA00]" />
+                <span>Global SEO &amp; Search Metadata</span>
+              </h2>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#FFF8E6] border border-[#EAAA00]/40 text-[#3A0F34] font-bold uppercase tracking-wider w-fit">
+                Dynamic Head Sync
+              </span>
+            </div>
+
+            <p className="text-xs text-[#5C5260] leading-relaxed">
+              Updates the document <code className="font-mono text-[#3A0F34]">&lt;title&gt;</code>,{' '}
+              <code className="font-mono text-[#3A0F34]">&lt;meta name="description"&gt;</code>, OpenGraph / Twitter cards, and{' '}
+              <code className="font-mono text-[#3A0F34]">&lt;link rel="canonical"&gt;</code> across your live site.
+            </p>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[#3A0F34] font-bold">Global Site Title</label>
+                <span
+                  className={`text-[10px] font-mono font-bold ${
+                    seoTitle.trim().length > 65 ? 'text-amber-600' : 'text-[#7A7280]'
+                  }`}
+                >
+                  {seoTitle.trim().length} / 60 chars recommended
+                </span>
+              </div>
+              <input
+                type="text"
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value)}
+                required
+                maxLength={120}
+                placeholder="Edenexa | High-Performance Web Development Studio"
+                className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] font-semibold focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[#3A0F34] font-bold">Meta Description</label>
+                <span
+                  className={`text-[10px] font-mono font-bold ${
+                    seoDescription.trim().length > 165 ? 'text-amber-600' : 'text-[#7A7280]'
+                  }`}
+                >
+                  {seoDescription.trim().length} / 160 chars recommended
+                </span>
+              </div>
+              <textarea
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+                required
+                rows={3}
+                maxLength={320}
+                placeholder="Summarize your studio value proposition in 1-2 compelling sentences..."
+                className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[#3A0F34] font-bold mb-1">Canonical Base URL</label>
+              <input
+                type="url"
+                value={seoCanonicalUrl}
+                onChange={(e) => setSeoCanonicalUrl(e.target.value)}
+                required
+                placeholder="https://edenexaai.vercel.app/"
+                className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] text-[#3A0F34] font-mono focus:outline-none focus:ring-2 focus:ring-[#EAAA00]/40"
+              />
+              <span className="text-[10px] text-[#7A7280] mt-1 block">
+                Primary authoritative URL for search engines and social share links (e.g. https://edenexaai.vercel.app/).
+              </span>
+            </div>
+
+            {/* Search Result Snippet Preview */}
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#DDE3E8] space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#7A7280] mb-2">
+                <Search className="w-3 h-3 text-[#EAAA00]" />
+                <span>Search Engine Snippet Preview</span>
+              </div>
+              <div className="text-[11px] text-emerald-700 font-mono truncate">
+                {seoCanonicalUrl.trim() || 'https://edenexaai.vercel.app/'}
+              </div>
+              <div className="text-sm font-bold text-[#1A0DAB] truncate">
+                {seoTitle.trim() || 'Edenexa | High-Performance Web Development Studio'}
+              </div>
+              <p className="text-xs text-[#5C5260] line-clamp-2 leading-relaxed">
+                {seoDescription.trim() ||
+                  'Edenexa designs and builds bespoke, responsive websites that help businesses showcase their brand, build trust, and turn visitors into clients.'}
+              </p>
             </div>
           </div>
 

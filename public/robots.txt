@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/
 
-Sitemap: https://edenexa.work.gd/sitemap.xml
+Sitemap: https://edenexaai.vercel.app/sitemap.xml

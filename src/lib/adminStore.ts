@@ -501,6 +501,7 @@ export async function fetchLiveSettings(): Promise<{ data: SiteSettings }> {
         const brandObj = typeof settingsMap.brand === 'object' && settingsMap.brand ? settingsMap.brand : {};
         const aboutObj = typeof settingsMap.about === 'object' && settingsMap.about ? settingsMap.about : {};
         const socialsObj = typeof settingsMap.socials === 'object' && settingsMap.socials ? settingsMap.socials : (settingsMap.social_links || {});
+        const seoObj = typeof settingsMap.seo === 'object' && settingsMap.seo ? settingsMap.seo : {};
 
         const rawWa = settingsMap.whatsapp_number || contactObj.whatsapp || INITIAL_SETTINGS.contact?.whatsapp || '';
         const cleanWa = String(rawWa).replace(/[^0-9]/g, '');
@@ -525,6 +526,10 @@ export async function fetchLiveSettings(): Promise<{ data: SiteSettings }> {
             instagram: socialsObj.instagram || INITIAL_SETTINGS.socials?.instagram || '',
             linkedin: socialsObj.linkedin || INITIAL_SETTINGS.socials?.linkedin || '',
             twitter: socialsObj.twitter || INITIAL_SETTINGS.socials?.twitter || '',
+          },
+          seo: {
+            ...INITIAL_SETTINGS.seo,
+            ...seoObj,
           },
         };
 
@@ -565,6 +570,9 @@ export async function saveLiveSettings(partial: Partial<SiteSettings>): Promise<
   if (partial.socials) {
     updates.push({ key: 'socials', value: partial.socials, updated_at: now });
     updates.push({ key: 'social_links', value: partial.socials, updated_at: now });
+  }
+  if (partial.seo) {
+    updates.push({ key: 'seo', value: partial.seo, updated_at: now });
   }
 
   for (const item of updates) {

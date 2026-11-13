@@ -215,5 +215,10 @@ export const INITIAL_SETTINGS: SiteSettings = {
     instagram: '',
     linkedin: '',
     twitter: ''
+  },
+  seo: {
+    title: 'Edenexa | High-Performance Web Development Studio',
+    description: 'Edenexa designs and builds bespoke, responsive websites that help businesses showcase their brand, build trust, and turn visitors into clients.',
+    canonicalUrl: 'https://edenexaai.vercel.app/'
   }
 };

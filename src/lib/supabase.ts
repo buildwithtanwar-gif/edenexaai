@@ -477,6 +477,7 @@ export async function getSiteSettings(): Promise<{
         const brandObj = typeof settingsMap.brand === 'object' && settingsMap.brand ? settingsMap.brand : {};
         const aboutObj = typeof settingsMap.about === 'object' && settingsMap.about ? settingsMap.about : {};
         const socialsObj = typeof settingsMap.socials === 'object' && settingsMap.socials ? settingsMap.socials : (settingsMap.social_links || {});
+        const seoObj = typeof settingsMap.seo === 'object' && settingsMap.seo ? settingsMap.seo : {};
 
         const rawWa = settingsMap.whatsapp_number || contactObj.whatsapp || INITIAL_SETTINGS.contact?.whatsapp || '';
         const cleanWa = String(rawWa).replace(/[^0-9]/g, '');
@@ -501,6 +502,10 @@ export async function getSiteSettings(): Promise<{
             instagram: socialsObj.instagram || INITIAL_SETTINGS.socials?.instagram || '',
             linkedin: socialsObj.linkedin || INITIAL_SETTINGS.socials?.linkedin || '',
             twitter: socialsObj.twitter || INITIAL_SETTINGS.socials?.twitter || '',
+          },
+          seo: {
+            ...INITIAL_SETTINGS.seo,
+            ...seoObj,
           },
         };
 

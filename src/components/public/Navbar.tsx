@@ -5,14 +5,12 @@ import { Logo } from '../common/Logo';
 interface NavbarProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
-  onOpenAdmin: () => void;
   hasProjects?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   onNavigate,
-  onOpenAdmin,
   hasProjects = false,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -142,16 +140,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>Start Project</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAdmin();
-              }}
-              className="w-full text-center py-2 text-xs text-[#7A7280] hover:text-[#3A0F34] cursor-pointer"
-            >
-              Admin Portal Login →
             </button>
           </div>
         </div>

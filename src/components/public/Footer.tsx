@@ -1,10 +1,9 @@
 import React from 'react';
-import { Lock, ArrowUp } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
   onNavigateLegal?: (path: string) => void;
-  onOpenAdmin: () => void;
   tagline?: string;
   publicEmail?: string;
   location?: string;
@@ -14,7 +13,6 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({
   onNavigate,
   onNavigateLegal,
-  onOpenAdmin,
   tagline = 'Your Vision. Built for the Web.',
   publicEmail = '',
   location = '',
@@ -149,21 +147,20 @@ export const Footer: React.FC<FooterProps> = ({
             </ul>
           </div>
 
-          {/* Contact & Admin Portal */}
+          {/* Contact Info */}
           <div className="space-y-3">
             <h4 className="text-white font-bold text-xs uppercase tracking-wider">
-              Agency Portal
+              Studio Info
             </h4>
             <div className="space-y-2 text-xs text-[#DDE3E8]/80">
               {publicEmail && <p>Email: {publicEmail}</p>}
               {location && <p>Base: {location}</p>}
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
-                  onClick={onOpenAdmin}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-[#EAAA00] transition cursor-pointer"
+                  onClick={() => onNavigate('contact')}
+                  className="text-[#EAAA00] hover:underline font-semibold transition cursor-pointer"
                 >
-                  <Lock className="w-3.5 h-3.5 text-[#EAAA00]" />
-                  <span>Admin Login</span>
+                  Start a Project →
                 </button>
               </div>
             </div>

@@ -19,30 +19,36 @@ export interface AdminAppProps {
   currentPath: string;
   navigateTo: (path: string, sectionId?: string) => void;
   loadPublicData: () => Promise<void>;
+  adminBasePath: string;
 }
 
-function AdminContent({ currentPath, navigateTo, loadPublicData }: AdminAppProps) {
+function AdminContent({ currentPath, navigateTo, loadPublicData, adminBasePath }: AdminAppProps) {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [selectedInquiryForAdmin, setSelectedInquiryForAdmin] = useState<Inquiry | null>(null);
 
-  // Safe redirect if already logged in as admin and navigating to /admin/login
-  useEffect(() => {
-    if (currentPath === '/admin/login' && !authLoading && user && isAdmin) {
-      navigateTo('/admin');
-    }
-  }, [currentPath, authLoading, user, isAdmin, navigateTo]);
+  const normalizedPath = currentPath.length > 1 ? currentPath.replace(/\/+$/, '') : currentPath;
+  const loginPath = `${adminBasePath}/login`;
+  const isLoginRoute = normalizedPath === loginPath;
+  const isInsideAdmin = normalizedPath === adminBasePath || normalizedPath.startsWith(`${adminBasePath}/`);
 
-  // Safe redirect if unauthenticated user attempts to access protected /admin routes
+  // Safe redirect if already logged in as admin and navigating to login route
   useEffect(() => {
-    if (currentPath.startsWith('/admin') && currentPath !== '/admin/login' && !authLoading && (!user || !isAdmin)) {
-      navigateTo('/admin/login');
+    if (isLoginRoute && !authLoading && user && isAdmin) {
+      navigateTo(adminBasePath);
     }
-  }, [currentPath, authLoading, user, isAdmin, navigateTo]);
+  }, [isLoginRoute, authLoading, user, isAdmin, navigateTo, adminBasePath]);
 
-  if (currentPath === '/admin/login') {
+  // Safe redirect if unauthenticated user attempts to access protected admin routes
+  useEffect(() => {
+    if (isInsideAdmin && !isLoginRoute && !authLoading && (!user || !isAdmin)) {
+      navigateTo(loginPath);
+    }
+  }, [isInsideAdmin, isLoginRoute, authLoading, user, isAdmin, navigateTo, loginPath]);
+
+  if (isLoginRoute) {
     return (
       <AdminLogin
-        onSuccess={() => navigateTo('/admin')}
+        onSuccess={() => navigateTo(adminBasePath)}
         onBackToWebsite={() => navigateTo('/')}
       />
     );
@@ -61,20 +67,20 @@ function AdminContent({ currentPath, navigateTo, loadPublicData }: AdminAppProps
 
   // Determine subview from pathname
   let activeAdminView: AdminView = 'overview';
-  if (currentPath === '/admin/inquiries') activeAdminView = 'inquiries';
-  else if (currentPath === '/admin/projects') activeAdminView = 'projects';
-  else if (currentPath === '/admin/services') activeAdminView = 'services';
-  else if (currentPath === '/admin/pricing') activeAdminView = 'pricing';
-  else if (currentPath === '/admin/coupons') activeAdminView = 'coupons';
-  else if (currentPath === '/admin/faqs') activeAdminView = 'faqs';
-  else if (currentPath === '/admin/content') activeAdminView = 'content';
-  else if (currentPath === '/admin/settings') activeAdminView = 'settings';
+  if (normalizedPath === `${adminBasePath}/inquiries`) activeAdminView = 'inquiries';
+  else if (normalizedPath === `${adminBasePath}/projects`) activeAdminView = 'projects';
+  else if (normalizedPath === `${adminBasePath}/services`) activeAdminView = 'services';
+  else if (normalizedPath === `${adminBasePath}/pricing`) activeAdminView = 'pricing';
+  else if (normalizedPath === `${adminBasePath}/coupons`) activeAdminView = 'coupons';
+  else if (normalizedPath === `${adminBasePath}/faqs`) activeAdminView = 'faqs';
+  else if (normalizedPath === `${adminBasePath}/content`) activeAdminView = 'content';
+  else if (normalizedPath === `${adminBasePath}/settings`) activeAdminView = 'settings';
 
   return (
     <AdminLayout
       currentView={activeAdminView}
       onSelectView={(view) => {
-        const path = view === 'overview' ? '/admin' : `/admin/${view}`;
+        const path = view === 'overview' ? adminBasePath : `${adminBasePath}/${view}`;
         navigateTo(path);
       }}
       onExitToPublic={() => {
@@ -85,12 +91,12 @@ function AdminContent({ currentPath, navigateTo, loadPublicData }: AdminAppProps
       {activeAdminView === 'overview' && (
         <DashboardOverview
           onNavigate={(view) => {
-            const path = view === 'overview' ? '/admin' : `/admin/${view}`;
+            const path = view === 'overview' ? adminBasePath : `${adminBasePath}/${view}`;
             navigateTo(path);
           }}
           onSelectInquiry={(inq) => {
             setSelectedInquiryForAdmin(inq);
-            navigateTo('/admin/inquiries');
+            navigateTo(`${adminBasePath}/inquiries`);
           }}
         />
       )}

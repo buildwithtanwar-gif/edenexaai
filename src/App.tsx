@@ -40,11 +40,18 @@ import { Loader2 } from 'lucide-react';
 // Lazy-loaded Admin Application (completely code-split with its own auth context)
 const AdminApp = lazy(() => import('./pages/admin/AdminApp'));
 
+// Secret admin route prefix (not linked anywhere in public UI; optional VITE_ADMIN_PATH override)
+const rawAdminPath = (import.meta.env.VITE_ADMIN_PATH || '/studio-portal-x9').trim();
+const ADMIN_BASE_PATH = (rawAdminPath.startsWith('/') ? rawAdminPath : `/${rawAdminPath}`).replace(/\/+$/, '') || '/studio-portal-x9';
+
 function AppContent() {
   useAnalytics();
 
   // Route State: extracts from window.location.pathname
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const normalizedPath = currentPath.length > 1 ? currentPath.replace(/\/+$/, '') : currentPath;
+  const isAdminRoute =
+    normalizedPath === ADMIN_BASE_PATH || normalizedPath.startsWith(`${ADMIN_BASE_PATH}/`);
   const [activeNavSection, setActiveNavSection] = useState('home');
 
   // Pre-fill selections from Public CTAs to Contact form
@@ -109,9 +116,9 @@ function AppContent() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Dynamically inject <meta name="robots" content="noindex,nofollow"> on /admin routes
+  // Dynamically inject <meta name="robots" content="noindex,nofollow"> on admin routes
   useEffect(() => {
-    if (currentPath.startsWith('/admin')) {
+    if (isAdminRoute) {
       let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
       let created = false;
       if (!meta) {
@@ -130,7 +137,71 @@ function AppContent() {
         }
       };
     }
-  }, [currentPath]);
+  }, [isAdminRoute]);
+
+  // Dynamically sync HTML <head> SEO metadata (title, description, canonical URL, OpenGraph, Twitter)
+  useEffect(() => {
+    const upsertMeta = (attr: 'name' | 'property', key: string, content: string) => {
+      let tag = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute(attr, key);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    const upsertCanonical = (href: string) => {
+      let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement('link');
+        link.setAttribute('rel', 'canonical');
+        document.head.appendChild(link);
+      }
+      link.setAttribute('href', href);
+    };
+
+    if (isAdminRoute) {
+      document.title = 'Edenexa Admin Console';
+      return;
+    }
+
+    const baseTitle =
+      siteSettings.seo?.title?.trim() ||
+      INITIAL_SETTINGS.seo?.title ||
+      'Edenexa | High-Performance Web Development Studio';
+    const baseDescription =
+      siteSettings.seo?.description?.trim() ||
+      INITIAL_SETTINGS.seo?.description ||
+      'Edenexa designs and builds bespoke, responsive websites that help businesses showcase their brand, build trust, and turn visitors into clients.';
+    const rawCanonical =
+      siteSettings.seo?.canonicalUrl?.trim() ||
+      INITIAL_SETTINGS.seo?.canonicalUrl ||
+      'https://edenexaai.vercel.app/';
+    const baseCanonical = rawCanonical.replace(/\/+$/, '');
+
+    let pageTitle = baseTitle;
+    let pageCanonical = `${baseCanonical}/`;
+
+    if (normalizedPath === '/privacy') {
+      pageTitle = `Privacy Policy | ${baseTitle}`;
+      pageCanonical = `${baseCanonical}/privacy`;
+    } else if (normalizedPath === '/terms') {
+      pageTitle = `Terms of Service | ${baseTitle}`;
+      pageCanonical = `${baseCanonical}/terms`;
+    } else if (normalizedPath !== '/') {
+      pageCanonical = `${baseCanonical}${normalizedPath}`;
+    }
+
+    document.title = pageTitle;
+    upsertCanonical(pageCanonical);
+    upsertMeta('name', 'description', baseDescription);
+    upsertMeta('property', 'og:title', pageTitle);
+    upsertMeta('property', 'og:description', baseDescription);
+    upsertMeta('property', 'og:url', pageCanonical);
+    upsertMeta('name', 'twitter:title', pageTitle);
+    upsertMeta('name', 'twitter:description', baseDescription);
+  }, [siteSettings.seo, normalizedPath, isAdminRoute]);
 
   // Fetch Public Data on Mount & when updated
   const loadPublicData = async () => {
@@ -199,7 +270,7 @@ function AppContent() {
   };
 
   const handleSectionScroll = (sectionId: string) => {
-    if (currentPath.startsWith('/admin') || currentPath === '/privacy' || currentPath === '/terms') {
+    if (isAdminRoute || currentPath === '/privacy' || currentPath === '/terms') {
       window.history.pushState({}, '', `/${sectionId === 'home' ? '' : sectionId}`);
       setCurrentPath(`/${sectionId === 'home' ? '' : sectionId}`);
       setActiveNavSection(sectionId);
@@ -225,7 +296,7 @@ function AppContent() {
 
   // If path directly matches public route on first load (e.g. /pricing)
   useEffect(() => {
-    if (!currentPath.startsWith('/admin') && currentPath !== '/privacy' && currentPath !== '/terms') {
+    if (!isAdminRoute && currentPath !== '/privacy' && currentPath !== '/terms') {
       const trimmed = currentPath.replace(/^\//, '');
       if (trimmed && ['services', 'pricing', 'portfolio', 'process', 'why-us', 'about', 'faq', 'contact'].includes(trimmed)) {
         setTimeout(() => {
@@ -280,7 +351,7 @@ function AppContent() {
   }
 
   // 2. ADMIN APPLICATION ROUTES (Completely encapsulated in lazy AdminApp with Suspense)
-  if (currentPath.startsWith('/admin')) {
+  if (isAdminRoute) {
     return (
       <>
         {progressBarElement}
@@ -298,6 +369,7 @@ function AppContent() {
             currentPath={currentPath}
             navigateTo={navigateTo}
             loadPublicData={loadPublicData}
+            adminBasePath={ADMIN_BASE_PATH}
           />
         </Suspense>
       </>
@@ -321,7 +393,6 @@ function AppContent() {
       <Navbar
         activeSection={activeNavSection}
         onNavigate={handleSectionScroll}
-        onOpenAdmin={() => navigateTo('/admin/login')}
         hasProjects={hasPublishedProjects}
       />
 
@@ -423,7 +494,6 @@ function AppContent() {
         hasProjects={hasPublishedProjects}
         onNavigate={handleSectionScroll}
         onNavigateLegal={(path) => navigateTo(path)}
-        onOpenAdmin={() => navigateTo('/admin/login')}
       />
 
       {/* Floating WhatsApp Action Button */}
