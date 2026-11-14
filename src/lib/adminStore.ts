@@ -715,11 +715,19 @@ export async function deleteLiveInquiry(inquiryId: string): Promise<void> {
 
   if (error) {
     console.warn('Error deleting inquiry:', error.message);
+    if (
+      error.code === '42501' ||
+      error.message.toLowerCase().includes('permission denied')
+    ) {
+      throw new Error(
+        'Permission denied for table inquiries. Please run supabase/fix_inquiries_delete.sql in your Supabase SQL Editor.'
+      );
+    }
     throw new Error(`Failed to delete inquiry: ${error.message}`);
   }
 
   if (!data || data.length === 0) {
-    throw new Error('Not permitted or already deleted');
+    throw new Error('Delete blocked by database policy or inquiry was already deleted.');
   }
 
   notifyDataUpdated('inquiries');

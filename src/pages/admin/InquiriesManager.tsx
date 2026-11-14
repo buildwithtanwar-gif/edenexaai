@@ -65,7 +65,7 @@ export const InquiriesManager: React.FC<InquiriesManagerProps> = ({
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
-    }, 3500);
+    }, type === 'error' ? 6000 : 3500);
   };
 
   const loadData = async () => {
@@ -209,7 +209,13 @@ export const InquiriesManager: React.FC<InquiriesManagerProps> = ({
       setDeleteConfirmId(null);
       showToast('Inquiry deleted from database', 'success');
     } catch (err: any) {
-      showToast(`Failed to delete inquiry: ${err?.message || 'Database error'}`, 'error');
+      const msg = err?.message || 'Database error';
+      showToast(
+        msg.startsWith('Failed to') || msg.startsWith('Permission denied')
+          ? msg
+          : `Failed to delete inquiry: ${msg}`,
+        'error'
+      );
     }
   };
 
