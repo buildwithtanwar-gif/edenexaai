@@ -40,7 +40,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [businessType, setBusinessType] = useState<BusinessType>('Cafe / Restaurant');
   const [packageInterest, setPackageInterest] = useState(selectedPackageName);
-  const [budget, setBudget] = useState('₹2,000–₹5,000');
   const [requirements, setRequirements] = useState('');
 
   // Coupon State
@@ -111,14 +110,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     'Startup',
     'Personal Brand',
     'Other',
-  ];
-
-  const budgetOptions = [
-    'Under ₹2,000',
-    '₹2,000–₹5,000',
-    '₹5,000–₹10,000',
-    '₹10,000+',
-    'Need guidance',
   ];
 
   const validate = (): boolean => {
@@ -199,7 +190,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       phone: cleanPhone,
       business_type: businessType,
       service: packageInterest,
-      budget: budget || null,
       requirements: requirements.trim(),
       coupon_code: appliedCoupon?.code || null,
     });
@@ -546,30 +536,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     </div>
                   </div>
 
-                  {/* Row 4: Budget Range */}
-                  <div>
-                    <label className="block text-xs font-bold text-[#3A0F34] mb-1.5">
-                      Estimated Budget <span className="text-[#7A7280] text-[10px] font-normal">(Optional)</span>
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                      {budgetOptions.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setBudget(opt)}
-                          className={`py-2 px-3 rounded-xl text-xs font-medium border text-center transition cursor-pointer ${
-                            budget === opt
-                              ? 'bg-[#EAAA00] border-[#EAAA00] text-[#3A0F34] font-extrabold shadow-sm'
-                              : 'bg-white border-[#DDE3E8] text-[#5C5260] hover:text-[#3A0F34] hover:border-[#EAAA00]/40'
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Row 4.5: Promo / Coupon Code */}
+                  {/* Row 4: Promo / Coupon Code */}
                   <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-[#DDE3E8] space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-[#3A0F34]">
